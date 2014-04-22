@@ -19,7 +19,8 @@ f = open(conf_file, "w")
 f.write(conf)
 f.close()
 
-subprocess.check_output(["./mouseloaf/mouseloaf.py", conf_file])
+subprocess.check_output(["./mouseloaf/mouseloaf.py",
+                         "--config=%s" % conf_file])
 f = open(success_file, "r")
 status = f.read()
 f.close()

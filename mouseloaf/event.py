@@ -7,7 +7,13 @@ from collections import namedtuple
 
 Activity = namedtuple("Activity", ["activity", "frequency"])
 AuxData = namedtuple("AuxData", ["data", "owner", "writable"])
-Message = namedtuple("Message", ["sender", "message_type", "data"])
+
+class Message(object):
+    def _msg_type(self):
+        return self.__class__.__name__
+
+    def msg_type(self):
+        return self._msg_type()
 
 class Coordinator(object):
     def __init__(self):
@@ -15,16 +21,17 @@ class Coordinator(object):
         self.activities_ = {}
         self.auxiliary_ = {}
 
-    def subscribe(self, subscriber, publisher, handler):
-        if publisher not in self.handlers_:
-            self.handlers_[publisher] = {}
-        if subscriber not in self.handlers_[publisher]:
-            self.handlers_[publisher][subscriber] = handler
+    def subscribe(self, subscriber, msg_type, handler):
+        if msg_type not in self.handlers_:
+            self.handlers_[msg_type] = {}
+        if subscriber not in self.handlers_[msg_type]:
+            self.handlers_[msg_type][subscriber] = handler
 
     def publish(self, publisher, message):
-        for subscriber in self.handlers_[publisher]:
+        msg_type = message.msg_type()
+        for subscriber in self.handlers_[msg_type]:
             message_copy = copy.deepcopy(message)
-            self.handlers_[publisher][subscriber](message_copy)
+            self.handlers_[msg_type][subscriber](message_copy)
 
     def register_activity(self, name, publisher, activity):
         assert type(activity) == Activity, "Must register an Activity"
@@ -48,8 +55,8 @@ class Coordinator(object):
 
     def loop(self):
         for publisher in self.activities_:
-            for activityName in self.activities_[publisher]:
-                activity = self.activities_[publisher][activityName]
+            for activity_name in self.activities_[publisher]:
+                activity = self.activities_[publisher][activity_name]
                 lc = LoopingCall(activity.activity)
                 lc.start(activity.frequency, now=False)
         reactor.run()

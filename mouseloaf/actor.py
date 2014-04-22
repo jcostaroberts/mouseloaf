@@ -3,6 +3,9 @@
 class Actor(object):
 
     def __init__(self, coordinator):
+        #self.name = "%s-%s" % \
+        #    (self.__class__.__bases__[0].__name__.replace("Base", ""),
+        #     self.__class__.__name__)
         self.name = self.__class__.__name__
         self.coordinator = coordinator
 

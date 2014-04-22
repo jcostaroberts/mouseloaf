@@ -89,8 +89,11 @@ class Curly(Actor):
             print "---------------------------"
             print "Test completed successfully"
 
+class LarryMessage(Message):
+    def __init__(self, data):
+        self.data = data
+
 class Larry(Actor):
-    larry_message = "LARRYMESSAGE"
     def __init__(self, coordinator):
         super(Larry, self).__init__(coordinator)
         self.activity = Activity(self.curly_reader, 0.25)
@@ -100,15 +103,14 @@ class Larry(Actor):
     def curly_reader(self):
         lines = read_curly_file()
         if len(lines) > self.lines_received:
-            message = Message(self.name, self.larry_message, lines[-1])
-            self._publish(message)
+            self._publish(LarryMessage(lines[-1]))
             self.lines_received += 1
 
 class Moe(Actor):
     def __init__(self, coordinator):
         super(Moe, self).__init__(coordinator)
         self.lines_received = 0
-        self._subscribe("Larry", self.larry_handler)
+        self._subscribe(LarryMessage("").msg_type(), self.larry_handler)
         self.finished = AuxData(LarryFinished(False), self.name, False)
         self._register_auxiliary_data("finished", self.finished)
 

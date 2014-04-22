@@ -17,11 +17,11 @@ def load_plugins(plugin_dir, modules):
         for filename in files:
             modname, ext = os.path.splitext(filename)
             if ext == '.py' and modname in modules:
-                 loaded.append(modname)
-                 file, path, descr = imp.find_module(modname, [root])
-                 if file:
-                     mod = imp.load_module(modname, file, path, descr)
-                     loaded.append(modname)
+                loaded.append(modname)
+                file, path, descr = imp.find_module(modname, [root])
+                if file:
+                    mod = imp.load_module(modname, file, path, descr)
+                    loaded.append(modname)
     assert set(loaded) == set(modules), \
             "Failed to load %s" % list(set(modules)-set(loaded))
     return PluginRegistry.plugins
