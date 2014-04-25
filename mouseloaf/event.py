@@ -22,6 +22,15 @@ class Coordinator(object):
         self.activities_ = {}
         self.auxiliary_ = {}
 
+    def _schedule(self, frequency, function, *args):
+        if not frequency:
+            # run once
+            reactor.callLater(0, function, *args)
+        else:
+            # run forever at specified frequency
+            lc = LoopingCall(function)
+            lc.start(frequency, now=False)
+
     def subscribe(self, subscriber, msg_type, handler):
         if msg_type not in self.handlers_:
             self.handlers_[msg_type] = {}
@@ -32,7 +41,9 @@ class Coordinator(object):
         msg_type = message.msg_type()
         for subscriber in self.handlers_[msg_type]:
             message_copy = copy.deepcopy(message)
-            self.handlers_[msg_type][subscriber](message_copy)
+            self._schedule(None,
+                           self.handlers_[msg_type][subscriber],
+                           message_copy)
 
     def register_activity(self, name, publisher, activity):
         assert type(activity) == Activity, "Must register an Activity"
@@ -58,8 +69,8 @@ class Coordinator(object):
         for publisher in self.activities_:
             for activity_name in self.activities_[publisher]:
                 activity = self.activities_[publisher][activity_name]
-                lc = LoopingCall(activity.activity)
-                lc.start(activity.frequency, now=False)
+                self._schedule(activity.frequency,
+                               activity.activity)
         reactor.run()
 
     def stop(self):
