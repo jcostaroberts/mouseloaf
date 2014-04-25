@@ -13,6 +13,7 @@ class StrategyBase(Actor):
         super(StrategyBase, self).__init__(coordinator)
         self._subscribe(OrderStatus("", 0).msg_type(),
                         self._handle_order_status)
+        self.portfolio = self._auxiliary_data("portfolio")
         self.strategy_init()
 
     def _handle_feed_data(self, data):

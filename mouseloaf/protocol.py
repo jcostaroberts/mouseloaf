@@ -38,15 +38,3 @@ class OrderStatus(Message):
         self.filled = filled
         self.remaining = remaining
         self.price = price
-
-"""
-Coordinator should deal with Messages, each of which has a string msg_type().
-The Message class will be defined in the event module. Then the next layer
-will implement a sort of protocol that defines several message types.
-The *Base classes know about and use these types. Message subclasses are
-responsible for setting the message types if they want something other than
-a string of the subclass' name. The base classes also have to subscribe to
-these types, and translate between the messages whizzing around and the
-handler implementations they call. This way the base classes can do type
-checking and it simplifies the implementors' job.
-"""

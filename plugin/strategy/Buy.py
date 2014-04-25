@@ -6,9 +6,9 @@ from strategy import StrategyBase
 
 class Buy(StrategyBase):
     def strategy_init(self):
-        self.reserves = 0.10
         self.sid = "BOGUS"
         self._request_symbol(self.sid)
+        self.portfolio = self._auxiliary_data("portfolio").data
 
     def place_limit_order(self):
         order_id = self._place_order(self.sid, quantity=1, limit_price=0.01)
@@ -20,14 +20,13 @@ class Buy(StrategyBase):
         print "  %d shares of %s at %f/share" % (filled,
                                                  self.sid,
                                                  price)
-        self.reserves -= price*filled
 
     def handle_feed_data(self, symbol, exchange, time,
                          bid_price, bid_quantity,
                          ask_price, ask_quantity):
         print "[%s] Strategy %s received feed data: %s is %f/share" % \
                 (datetime.now(), self.name, symbol, ask_price)
-        if self.reserves > 0:
+        if self.portfolio.cash > 0:
             self.place_limit_order()
         else:
             print "[%s] Strategy %s is out of money!" % (datetime.now(),

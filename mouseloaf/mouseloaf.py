@@ -5,6 +5,9 @@ import sys
 from os import path
 from event import Coordinator
 from plugin import load_plugins
+from broker import BrokerBase
+from feed import FeedBase
+from strategy import StrategyBase
 
 parser = argparse.ArgumentParser()
 parser.add_argument("--config", dest="config", action="store", default=None)
@@ -37,7 +40,17 @@ def main():
     config = parse_config(args.config)
     plugins = load_plugins(pdir, config.plugins)
     coordinator = Coordinator()
-    modules = [ P(config, coordinator) for P in plugins ]
+
+    # XXX_jcr: move this crap or figure out something better.
+    # The issue is that we know there's an ordering constraint,
+    # in that the strategy depends on the broker being there
+    # in its initialization.
+    modules = []
+    for P in plugins:
+        for t in [BrokerBase, FeedBase, StrategyBase]:
+            if t in P.__bases__:
+                modules.append(P(config, coordinator))
+    #modules = [ P(config, coordinator) for P in plugins ]
 
     coordinator.loop()
 

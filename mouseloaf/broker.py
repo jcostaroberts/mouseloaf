@@ -6,9 +6,15 @@ from plugin import PluginRegistry
 from protocol import Order
 from protocol import OrderStatus
 
+class Position(object):
+    def __init__(self, symbol, quantity=0):
+        self.symbol = symbol
+        self.quantity = quantity
+
 class Portfolio(object):
     def __init__(self):
-        self.stuff = "XXX"
+        self.cash = 0.0
+        self.positions = {}
 
 class BrokerBase(Actor):
     __metaclass__=PluginRegistry
@@ -17,6 +23,7 @@ class BrokerBase(Actor):
         super(BrokerBase, self).__init__(coordinator)
         self._subscribe(Order("", 0).msg_type(), self._handle_order)
         self.portfolio = Portfolio()
+        self.seed_portfolio()
         self._register_auxiliary_data("portfolio",
                                        AuxData(self.portfolio,
                                                self.name,
@@ -38,3 +45,7 @@ class BrokerBase(Actor):
 
     def broker_init(self):
         raise NotImplementedError("Broker subclasses must implement this.")
+
+    def seed_portfolio(self):
+        raise NotImplementedError("Broker subclasses must implement this.")
+

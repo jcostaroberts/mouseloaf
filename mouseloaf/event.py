@@ -1,9 +1,10 @@
 #!/usr/bin/env python
 
 import copy
+from collections import namedtuple
+from proxy import ReadOnlyProxy
 from twisted.internet import reactor
 from twisted.internet.task import LoopingCall
-from collections import namedtuple
 
 Activity = namedtuple("Activity", ["activity", "frequency"])
 AuxData = namedtuple("AuxData", ["data", "owner", "writable"])
@@ -42,16 +43,16 @@ class Coordinator(object):
     def register_auxiliary_data(self, name, aux_data):
         assert type(aux_data) == AuxData, "Must register an AuxData"
         if name not in self.auxiliary_:
-            self.auxiliary_[name] = aux_data
+            if not aux_data.writable:
+                self.auxiliary_[name] = ReadOnlyProxy(aux_data)
+            else:
+                self.auxiliary_[name] = aux_data
         return self.auxiliary_[name]
 
     def auxiliary_data(self, accessor, name):
         if name not in self.auxiliary_:
             return None
-        aux_data = self.auxiliary_[name]
-        if accessor != aux_data.owner and not aux_data.writable:
-            aux_data = copy.deepcopy(aux_data)
-        return aux_data
+        return self.auxiliary_[name]
 
     def loop(self):
         for publisher in self.activities_:
