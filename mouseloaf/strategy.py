@@ -13,8 +13,8 @@ class StrategyBase(Actor):
         super(StrategyBase, self).__init__(coordinator)
         self._subscribe(OrderStatus("", 0).msg_type(),
                         self._handle_order_status)
-        self.portfolio = self._auxiliary_data("portfolio")
-        self.strategy_init()
+        self.portfolio = self._mount_auxiliary_data("portfolio",
+                                                    self._aux_mounted)
 
     def _handle_feed_data(self, data):
         assert type(data) == FeedData
@@ -27,6 +27,10 @@ class StrategyBase(Actor):
         self.handle_order_status(status.order_id, status.status,
                                  status.filled, status.remaining,
                                  status.price)
+
+    def _aux_mounted(self, portfolio):
+        self.portfolio = portfolio
+        self.strategy_init()
 
     """ API exposed to Strategy subclasses """
     def _request_symbol(self, symbol):

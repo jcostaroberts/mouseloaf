@@ -20,7 +20,8 @@ class Actor(object):
         self.coordinator.register_activity(activity_name, self.name, activity)
 
     def _register_auxiliary_data(self, name, data):
-        return self.coordinator.register_auxiliary_data(name, data)
+        self.coordinator.register_auxiliary_data(name, data)
 
-    def _auxiliary_data(self, name):
-        return self.coordinator.auxiliary_data(self.name, name)
+    def _mount_auxiliary_data(self, name, ready_callback):
+        return self.coordinator.mount_auxiliary_data(self.name, name,
+                                                     ready_callback)

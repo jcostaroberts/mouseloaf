@@ -18,9 +18,10 @@ class Message(object):
 
 class Coordinator(object):
     def __init__(self):
-        self.handlers_ = {}
-        self.activities_ = {}
-        self.auxiliary_ = {}
+        self.handlers_ = {} # by message type
+        self.activities_ = {} # by actor
+        self.auxiliary_ = {} # by thing name
+        self.mount_callbacks_ = {} # by thing name
 
     def _schedule(self, frequency, function, *args):
         if not frequency:
@@ -55,15 +56,20 @@ class Coordinator(object):
         assert type(aux_data) == AuxData, "Must register an AuxData"
         if name not in self.auxiliary_:
             if not aux_data.writable:
-                self.auxiliary_[name] = ReadOnlyProxy(aux_data)
+                self.auxiliary_[name] = ReadOnlyProxy(aux_data.data)
             else:
-                self.auxiliary_[name] = aux_data
-        return self.auxiliary_[name]
+                self.auxiliary_[name] = aux_data.data
+            if name in self.mount_callbacks_:
+                for fn in self.mount_callbacks_[name]:
+                    self._schedule(None, ready_callback, self.auxiliary_[name])
 
-    def auxiliary_data(self, accessor, name):
+    def mount_auxiliary_data(self, accessor, name, ready_callback):
         if name not in self.auxiliary_:
-            return None
-        return self.auxiliary_[name]
+            if name not in self.mount_callbacks_:
+                self.mount_callbacks_[name] = []
+            self.mount_callbacks_[name].append(ready_callack)
+        else:
+            self._schedule(None, ready_callback, self.auxiliary_[name])
 
     def loop(self):
         for publisher in self.activities_:

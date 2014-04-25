@@ -8,7 +8,6 @@ class Buy(StrategyBase):
     def strategy_init(self):
         self.sid = "BOGUS"
         self._request_symbol(self.sid)
-        self.portfolio = self._auxiliary_data("portfolio").data
 
     def place_limit_order(self):
         order_id = self._place_order(self.sid, quantity=1, limit_price=0.01)
